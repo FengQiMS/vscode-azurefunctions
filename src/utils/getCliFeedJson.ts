@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-// tslint:disable-next-line:no-require-imports
-import request = require('request-promise');
+import { xhr } from 'request-light';
 import { callWithTelemetryAndErrorHandling, IActionContext } from 'vscode-azureextensionui';
 import { ProjectRuntime } from '../constants';
 import { localize } from '../localize';
@@ -37,11 +36,8 @@ export async function tryGetCliFeedJson(): Promise<cliFeedJsonResponse | undefin
     return await callWithTelemetryAndErrorHandling('azureFunctions.tryGetCliFeedJson', async function (this: IActionContext): Promise<cliFeedJsonResponse> {
         this.properties.isActivationEvent = 'true';
         this.suppressErrorDisplay = true;
-        const funcJsonOptions: request.OptionsWithUri = {
-            method: 'GET',
-            uri: funcCliFeedUrl
-        };
-        return <cliFeedJsonResponse>JSON.parse(await <Thenable<string>>request(funcJsonOptions).promise());
+        const data: string = (await xhr({ url: funcCliFeedUrl })).responseText;
+        return <cliFeedJsonResponse>JSON.parse(data);
     });
 }
 

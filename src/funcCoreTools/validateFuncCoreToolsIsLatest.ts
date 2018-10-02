@@ -5,8 +5,7 @@
 
 // tslint:disable-next-line:no-require-imports
 import opn = require("opn");
-// tslint:disable-next-line:no-require-imports
-import request = require('request-promise');
+import { xhr } from 'request-light';
 import * as semver from 'semver';
 import * as vscode from 'vscode';
 import { callWithTelemetryAndErrorHandling, DialogResponses, IActionContext, parseError } from 'vscode-azureextensionui';
@@ -74,7 +73,7 @@ async function getNewestFunctionRuntimeVersion(packageManager: PackageManager | 
     try {
         if (packageManager === PackageManager.brew) {
             const brewRegistryUri: string = 'https://aka.ms/AA1t7go';
-            const brewInfo: string = await <Thenable<string>>request(brewRegistryUri);
+            const brewInfo: string = (await xhr({ url: brewRegistryUri })).responseText;
             const matches: RegExpMatchArray | null = brewInfo.match(/version\s+["']([^"']+)["']/i);
             if (matches && matches.length > 1) {
                 return matches[1];
@@ -82,7 +81,8 @@ async function getNewestFunctionRuntimeVersion(packageManager: PackageManager | 
         } else {
             const npmRegistryUri: string = 'https://aka.ms/W2mvv3';
             type distTags = { core: string, docker: string, latest: string };
-            const distTags: distTags = <distTags>JSON.parse(await <Thenable<string>>request(npmRegistryUri));
+            const data: string = (await xhr({ url: npmRegistryUri })).responseText;
+            const distTags: distTags = <distTags>JSON.parse(data);
             switch (projectRuntime) {
                 case ProjectRuntime.v1:
                     return distTags.latest;
