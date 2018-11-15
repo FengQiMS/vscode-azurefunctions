@@ -114,7 +114,10 @@ suite('Create New Project Tests', async function (this: ISuiteCallbackContext): 
     });
 
     const pythonProject: string = 'PythonProject';
-    test(pythonProject, async () => {
+    test(pythonProject, async function (this: IHookCallbackContext): Promise<void> {
+        this.timeout(5 * 60 * 1000);
+
+        // todo - long running
         const projectPath: string = path.join(testFolderPath, pythonProject);
         await testCreateNewProject(projectPath, ProjectLanguage.Python, true);
         await validateVSCodeProjectFiles(projectPath);
